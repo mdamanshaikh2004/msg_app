@@ -3,29 +3,26 @@ require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
-const Post = require("./models/post");
+const Post = require("./models/Post");
 
 const app = express();
-const PORT = process.env.PORT || 8080;
 
 // Middleware
 app.use(cors());
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
 
-// MongoDB Connection
+// Test route
+app.get("/", (req, res) => {
+    res.send("Backend is running");
+});
+
+// MongoDB connect
 mongoose
     .connect(process.env.MONGO_URI)
-    .then(() => {
-        console.log("MongoDB Connected");
-    })
-    .catch((err) => {
-        console.log(err);
-    });
+    .then(() => console.log("MongoDB Connected"))
+    .catch((err) => console.log(err));
 
-// Routes
-
-// Get all posts
+// GET all posts
 app.get("/posts", async(req, res) => {
     try {
         const posts = await Post.find();
@@ -35,30 +32,30 @@ app.get("/posts", async(req, res) => {
     }
 });
 
-// Create post
+// CREATE post
 app.post("/posts", async(req, res) => {
     try {
-        const newPost = new Post(req.body);
-        await newPost.save();
-        res.json(newPost);
+        const post = new Post(req.body);
+        await post.save();
+        res.json(post);
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
 });
 
-// Update post
+// UPDATE post
 app.put("/posts/:id", async(req, res) => {
     try {
-        const updatedPost = await Post.findByIdAndUpdate(req.params.id, req.body, {
+        const updated = await Post.findByIdAndUpdate(req.params.id, req.body, {
             new: true,
         });
-        res.json(updatedPost);
+        res.json(updated);
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
 });
 
-// Delete post
+// DELETE post
 app.delete("/posts/:id", async(req, res) => {
     try {
         await Post.findByIdAndDelete(req.params.id);
@@ -68,7 +65,8 @@ app.delete("/posts/:id", async(req, res) => {
     }
 });
 
-// Server
+// Start server
+const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+    console.log("Server running on port " + PORT);
 });
