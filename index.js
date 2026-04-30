@@ -7,22 +7,30 @@ const Post = require("./models/Post");
 
 const app = express();
 
-// Middleware
-app.use(cors());
+app.use(
+    cors({
+        origin: "*",
+        methods: ["GET", "POST", "PUT", "DELETE"],
+    }),
+);
+
 app.use(express.json());
 
-// Test route
+// Health check
 app.get("/", (req, res) => {
-    res.send("Backend is running");
+    res.json({ message: "Backend is running 🚀" });
 });
 
-// MongoDB connect
+// MongoDB
 mongoose
     .connect(process.env.MONGO_URI)
     .then(() => console.log("MongoDB Connected"))
-    .catch((err) => console.log(err));
+    .catch((err) => {
+        console.error("MongoDB Error:", err);
+        process.exit(1);
+    });
 
-// GET all posts
+// Routes
 app.get("/posts", async(req, res) => {
     try {
         const posts = await Post.find();
@@ -32,7 +40,6 @@ app.get("/posts", async(req, res) => {
     }
 });
 
-// CREATE post
 app.post("/posts", async(req, res) => {
     try {
         const post = new Post(req.body);
@@ -43,7 +50,6 @@ app.post("/posts", async(req, res) => {
     }
 });
 
-// UPDATE post
 app.put("/posts/:id", async(req, res) => {
     try {
         const updated = await Post.findByIdAndUpdate(req.params.id, req.body, {
@@ -55,7 +61,6 @@ app.put("/posts/:id", async(req, res) => {
     }
 });
 
-// DELETE post
 app.delete("/posts/:id", async(req, res) => {
     try {
         await Post.findByIdAndDelete(req.params.id);
@@ -65,8 +70,14 @@ app.delete("/posts/:id", async(req, res) => {
     }
 });
 
-// Start server
+// Global error handler
+app.use((err, req, res, next) => {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+});
+
 const PORT = process.env.PORT || 8080;
+
 app.listen(PORT, () => {
     console.log("Server running on port " + PORT);
 });
