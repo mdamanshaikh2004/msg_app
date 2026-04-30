@@ -3,7 +3,7 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 
-const Post = require("./models/Post");
+const Post = require("./models/Post.js");
 
 const app = express();
 
